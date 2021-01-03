@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <!-- CSS only -->
+    <title>A-Store</title>
+    <!-- Favicon-->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <!-- JavaScript Bundle with Popper -->
+    <!-- Plugins Core Css -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+    <link href="assets/css/app.min.css" rel="stylesheet">
+    <!-- Custom Css -->
+    <link href="assets/css/style.css" rel="stylesheet" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+        integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.min.js"
+        integrity="sha384-w1Q4orYjBQndcko6MimVbzY0tgp4pWB4lZ7lr30WKz0vr/aWKhXdBNmNb5D92v7s"
+        crossorigin="anonymous"></script>
+    <link href="assets/css/pages/extra_pages.css" rel="stylesheet" />
+    <Script>
+        function openmodal() {
+            $("#exampleModal").modal("show");
+        }
+        function message() {
+            $("#forgot_pswd_mail").hide();
+            $("#forgot_pswd_label").hide();
+            $("#forgot_pswd_msg").show();
+            $('#forgot_pswd_btn').hide();
+        }
+        function login() {
+            var mailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+            var d = { 'email': $('#login_mail').val(), 'pass': $('#login_pass').val() };
+            if (d['email'] != '' && d['pass'] != '' && d['email'].match(mailformat)) {
+                $.ajax({
+
+                    url: 'endpoints/adminlogin.php',
+                    type: "POST",
+                    data: d,
+                    success: function (obj) {
+                        // console.log(obj);
+                        obj = JSON.parse(obj);
+                        console.log(obj['message']);
+                        if (obj['status_code'] == 200) {
+                            localStorage.setItem('choose_logoheader', "logo-black");
+                            localStorage.setItem('choose_skin', "theme-black");
+                            localStorage.setItem("menu_option", "menu_dark");
+                            window.location.href = 'dashboard.html';
+                            
+
+                        }
+                        else {
+                            swal("Invalid Credentials", "", "warning");
+                        }
+                    }
+                })
+            }
+            else {
+                alert('Email Id and password required')
+            }
+        }
+        function register() {
+            var mailformat = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+            var d = { 'name': $('#register_name').val(), 'email': $('#register_mail').val(), 'pass': $('#register_pass').val() };
+            if (d['email'] != '' && d['pass'] != '' && d['name'] != '' && d['email'].match(mailformat)) {
+                $.ajax({
+
+                    url: 'endpoints/adminregister.php',
+                    type: "POST",
+                    data: d,
+                    success: function (obj) {
+                        obj = JSON.parse(obj);
+                        console.log(obj['message']);
+                        if (obj['status_code'] == 200)
+                        {
+                            swal("Successfully registered", "", "success");
+                        }
+                        else{
+                            swal("Existing email-id", "", "warning")
+                        }
+                    }
+                })
+            }
+            else {
+                alert('All fields are required')
+            }
+
+        }
+    </Script>
+</head>
+
+<body class="dark">
+    <div class="loginmain">
+        <div class="loginCard">
+            <div class="login-btn splits">
+                <p>Already an user?</p>
+                <button class="active">Login</button>
+            </div>
+            <div class="rgstr-btn splits">
+                <p>Don't have an account?</p>
+                <button>Register</button>
+            </div>
+            <div class="wrapper">
+                <form id="login" tabindex="500">
+                    <h2>Login</h2>
+                    <div class="form-group form-float">
+                        <div class="form-line" style="margin-top: 30px;">
+                            <input id='login_mail' type="email" class="form-control" name="mail" required>
+                            <label>Email</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line" style="margin-top: 30px;">
+                            <input id='login_pass' type="password" class="form-control" name="pass" required>
+                            <label>Password</label>
+                        </div>
+                    </div>
+
+                    <div class="text-right p-t-8 p-b-31">
+                        <a href='#' onclick="openmodal()">
+                            Forgot password?
+                        </a>
+                    </div>
+                    <div>
+                        <button class="dark" type="button" onclick="login()">Login</button>
+                    </div>
+
+                </form>
+                <form id="register" tabindex="502">
+                    <h3>Register</h3>
+                    <div class="form-group form-float">
+                        <div class="form-line" style="margin-top: 30px;">
+                            <input id="register_name" type="text" class="form-control" name="name" required>
+                            <label>Name</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line" style="margin-top: 30px;">
+                            <input id="register_mail" type="email" class="form-control" name="mail" required>
+                            <label>Email</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line" style="margin-top: 30px;">
+                            <input id="register_pass" type="password" class="form-control" name="pass" required>
+                            <label>password</label>
+                        </div>
+                    </div>
+
+
+                    <div>
+                        <button class="dark" type="button" onclick="register()">Register</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Plugins Js -->
+    <script src="assets/js/app.min.js"></script>
+    <!-- Extra page Js -->
+    <script src="assets/js/pages/examples/login-register.js"></script>
+
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="login100-form validate-form ml-auto mr-auto">
+                        <span class="login100-form-title p-b-45">
+                            Reset Password
+                        </span>
+
+                        <span class="error-subheader2 p-t-20 p-b-15" id='forgot_pswd_label'>
+                            Enter your registered email address.
+                        </span>
+                        <span class="error-subheader2 p-t-20 p-b-15" id='forgot_pswd_msg' style="display: none;">
+                            New Password has been sent to your registered email address.
+                        </span>
+                        <div id='forgot_pswd_mail' class="wrap-input100 validate-input"
+                            data-validate="Valid email is required: ex@abc.xyz">
+                            <input class="input100" type="text" name="email">
+                            <span class="focus-input100"></span>
+                            <span class="label-input100">Email</span>
+                        </div>
+
+                        <div class="container-login100-form-btn p-t-30" id="forgot_pswd_btn">
+                            <button class="login100-form-btn" onclick="message()">
+                                Reset My Password
+                            </button>
+                        </div>
+
+
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal fade" id="resetmodal" tabindex="-1" role="dialog"
+                        aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form class="login100-form validate-form ml-auto mr-auto">
+                                        <span class="login100-form-title p-b-45">
+                                            New password is sent to the registered email address
+                                        </span>
+
+                                    </form>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>A-Store</title>
+    <!-- Favicon-->
+    <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+    <!-- Plugins Core Css -->
+    <link href="assets/css/app.min.css" rel="stylesheet">
+    <!-- Custom Css -->
+    <link href="assets/css/style.css" rel="stylesheet" />
+    <!-- You can choose a theme from css/styles instead of get all themes -->
+    <link href="assets/css/styles/all-themes.css" rel="stylesheet" />
+    <script src="assets/js/jquery.min.js"></script>
+    <script src="assets/js/login.js"></script>
+    <script src="aside.js"></script>
+    <style>
+        .similar-container
+        {
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center center !important;
+            height: 100px !important;
+            width: 100px !important;
+        }
+    </style>
+    <script>
+        $(document).ready(function()
+        {
+             var sub_id =localStorage.getItem('sub_id');
+            var product_id = localStorage.getItem('product_id');
+            $.ajax({
+                type:'GET',
+                url:'endpoints/product_details.php',
+                data:{'product':product_id,'sub':sub_id},
+                success:function(obj)
+                {   
+                    console.log(obj);
+                    obj = JSON.parse(obj);
+                    console.log(obj);
+                    var c = obj['data']['name'];
+                    var image = `<img src="assets/images/`+obj['data']['image']+`" alt="">`;
+                    $('.product-gallery-featured').html(image);
+                    var num = parseInt(obj['data']['quantity']);
+                    var sold=100-num;
+                    var desc = obj['data']['description'].split(",");
+                    var title = `<p class="last-sold text-muted">`+sold+` items sold</p>
+                                                <h4 class="product-title mb-2">`+obj['data']['name']+` </h4>
+                                                <h2 class="product-price display-4">₹`+obj['data']['price']+`</h2>
+                                                <h4 style="margin-top:40px">Details</h4>
+                                                
+                                                `;
+                                for(i=0;i<desc.length;i++)
+                                {
+                                    title+=`<p> <strong> ->`+desc[i].slice(2,-1)+`</strong></p>`
+                                }
+                                                
+                                                
+                                                title+=`
+                                                <label for="quant">Quantity</label>
+                                                <input type="number" name="quantity" min="1" max="`+num+`" id="quant" class="form-control mb-5 input-lg" placeholder="Choose the quantity" value="1">
+                                                <button  class="btn btn-warning waves-effect" onclick="add_cart(`+num+`,`+obj['data']['product_id']+`)" >
+                                                    <i class="fas fa-cart-plus"></i>
+                                                    <span>ADD TO CART</span>
+                                                </button>
+                                                <button type="button" onclick="buy(`+num+`,`+obj['data']['product_id']+`)" class="btn btn-info waves-effect">
+                                                    <i class="fas fa-bolt"></i>
+                                                    <span>BUY NOW</span>
+                                                </button>`;
+                    $('.product-payment-details').html(title);
+
+                    var features= obj['data']['details'].split("'");
+                    var details =``;
+                    for(i=1;i<features.length-1;i++)
+                    {
+                        if (features[i]!=', ')
+                        {
+                        var row = features[i].split(":")
+                        
+                        details+=` <dt class="col-sm-3">`+row[0]+`</dt>
+                                            <dd class="col-sm-9">`+row[1]+`</dd>`
+                        }
+                    }
+                    $('#features').html(details);
+                    var description = ` <h2 class="mb-5">Description</h2>`;
+                    for(i=0;i<desc.length;i++)
+                    {
+                        description+=`<p> <strong>`+desc[i].slice(2,-1)+`</strong></p>`
+                    }
+                    $('#desc').html(description);
+                    var more = ``;
+                    
+                    for(i=0;i<obj['more'].length;i++)
+                    {
+                        more+=`<div class="card"  onclick='open_product(`+obj['more'][i]['product_id']+`)'>
+                            <div class="similar-container" style="background-image: url('assets/images/`+obj['more'][i]['image']+`')" ></div>
+                                          
+                            <div class="card-body">
+                                <h5 class="card-title">Rs`+obj['more'][i]['price']+`</h5>
+                                <span class="text-muted"><small>`+obj['more'][i]['name']+`</small></span>
+                            </div>
+                        </div>`;
+                    }
+                    $('#more_items').html(more);
+                }
+                
+            })
+        })
+        function open_product(param)
+        {
+            localStorage.setItem('product_id',param);
+            window.location.href='product.html';
+        }
+        function add_cart(max,product_id)
+        {
+          
+            quant = $('#quant').val();
+            console.log(quant);
+            if(quant>max)
+            {
+                alert('maximum quantity exceeded');
+            }
+            else{
+            $.ajax({
+                type:'POST',
+                url:'endpoints/addcart.php',
+                data:{'product_id':product_id,'quantity':quant},
+                success:function(obj)
+                {
+                    if(obj=='200')
+                    {
+                        swal('ADDED','item added to cart','success');
+                    }
+                
+                
+                }
+            })
+            }
+        
+        }
+        function buy(max,product_id)
+        {
+            quant = $('#quant').val();
+            console.log(quant);
+            if(quant>max)
+            {
+                alert('maximum quantity exceeded');
+            }
+            else{
+            $.ajax({
+                type:'POST',
+                url:'endpoints/addcart.php',
+                data:{'product_id':product_id,'quantity':quant},
+                success:function(obj)
+                {
+                    console.log(obj)
+                    if(obj=='200')
+                    {
+                        window.location.href='cart.php';
+                    }
+                }
+            })
+            }
+        }
+      
+       
+    </script>
+
+</head>
+
+<body class="light">
+    <!-- Page Loader -->
+    <div class="page-loader-wrapper">
+        <div class="loader">
+            <div class="m-t-30">
+                <img class="loading-img-spin" src="assets/images/loading.png" alt="admin">
+            </div>
+            <p>Please wait...</p>
+        </div>
+    </div>
+    <!-- #END# Page Loader -->
+    <!-- Overlay For Sidebars -->
+    <div class="overlay"></div>
+    <!-- #END# Overlay For Sidebars -->
+    <!-- Top Bar -->
+    <nav class="navbar">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a href="#" onClick="return false;" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar-collapse" aria-expanded="false"></a>
+                <a href="#" onClick="return false;" class="bars"></a>
+                <a class="navbar-brand" href="../../index.html">
+                    <img src="assets/images/logo.png" alt="" />
+                    <span class="logo-name">A-Store</span>
+                </a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar-collapse">
+                <ul class="nav navbar-nav navbar-left">
+                    <li>
+                        <a href="#" onClick="return false;" class="sidemenu-collapse">
+                            <i data-feather="align-justify"></i>
+                        </a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <!-- Full Screen Button -->
+                    <li class="fullscreen">
+                        <a href="javascript:;" class="fullscreen-btn">
+                            <i data-feather="maximize"></i>
+                        </a>
+                    </li>
+                    <!-- #END# Full Screen Button -->
+                    <!-- #START# Notifications-->
+                    <li class="dropdown">
+                        <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown" role="button">
+                            <i data-feather="bell"></i>
+                            <span class="notify"></span>
+                            <span class="heartbeat"></span>
+                        </a>
+                        <ul class="dropdown-menu pullDown">
+                            <li class="header">Orders</li>
+                            <li class="body">
+                                <ul class="menu">
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user1.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 14 mins ago
+                                                </span>
+
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user1.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 14 mins ago
+                                                </span>
+
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user3.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 3 hours ago
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user4.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 2 hours ago
+                                                </span>
+
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user5.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 4 hours ago
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user6.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> 3 hours ago
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="#" onClick="return false;">
+                                            <span class="table-img msg-user">
+                                                <img src="assets/images/user/user7.jpg" alt="">
+                                            </span>
+                                            <span class="menu-info">
+                                                <span class="menu-title">Apple Iphone</span>
+                                            <span class="menu-desc">
+                                                    <i class="material-icons">access_time</i> Yesterday
+                                                </span>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li class="footer">
+                                <a href="#" onClick="return false;">View All Orders</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!-- #END# Notifications-->
+
+                    <!-- #END# Tasks -->
+                    <li class="user_profile">
+                        <a href="#" onClick="return false;" class="js-right-sidebar" data-close="true">
+                            <i data-feather="settings"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- #Top Bar -->
+    <div>
+        <!-- Left Sidebar -->
+        <aside id="leftsidebar" class="sidebar">
+
+            <div class="menu">
+                <ul class="list" id="aside_list">
+                    <li class="header active"></li>
+                    <li>
+                        <a href="#" onClick="return false;" class="menu-toggle">
+                            <i data-feather="home"></i>
+                            <span>Home</span>
+                        </a>
+                        <ul class="ml-menu">
+                            <li>
+                                <a href="../../index.html">cart</a>
+                            </li>
+                            <li>
+                                <a href="../../pages/dashboard/dashboard2.html">checkout</a>
+                            </li>
+                        </ul>
+                    </li>
+
+
+                </ul>
+            </div>
+
+        </aside>
+
+    </div>
+    <section class="content">
+        <div class="container-fluid">
+            <div class="block-header">
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <ul class="breadcrumb breadcrumb-style">
+                            <li>
+                                <h4 class="page-title">Product Details</h4>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="body">
+                            <div class="card-body ">
+                                <div class="product-store">
+                                    <div class="row">
+                                        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                            <div class="product-gallery">
+                                                <div class="product-gallery-thumbnails">
+                                                    <ol class="thumbnails-list list-unstyled">
+                                                       
+                                                    </ol>
+                                                </div>
+                                                <div class="product-gallery-featured">
+                                                    <img src="assets/images/products/p1.jpg" alt="">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                            <div class="product-payment-details">
+                                                
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="body">
+                            <!-- Nav tabs -->
+                            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                                <li role="presentation">
+                                    <a href="#home" data-toggle="tab" class="active show">Features</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#profile" data-toggle="tab">Description</a>
+                                </li>
+                                <li role="presentation">
+                                    <a href="#messages" data-toggle="tab">FAQ</a>
+                                </li>
+                            </ul>
+                            <!-- Tab panes -->
+                            <div class="tab-content">
+                                <div role="tabpanel" class="tab-pane fade in active show" id="home">
+                                    <div class="product-description">
+                                        <h2 class="mb-5">Features</h2>
+                                        <dl class="row mb-5 " id="features">
+                                           
+                                    
+                                        </dl>
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="profile">
+                                    <div class="product-description" id="desc">
+                                    </div>
+                                </div>
+                                <div role="tabpanel" class="tab-pane fade" id="messages">
+                                    <b>Questions and Answers</b>
+                                    <div class="product-faq mb-5">
+                                        <p class="text-muted">What information do you need?</p>
+                                    </div>
+                                    <div class="product-comments">
+                                        <h5 class="mb-2">Or ask to A-Store</h5>
+                                        <form class="form-inline mb-5">
+                                            <textarea cols="50" rows="2" class="form-control mr-4" placeholder="write a question"></textarea><button class="btn btn-lg btn-primary">Ask</button>
+                                        </form>
+                                        <h5 class="mb-5">Lastest Questions</h5>
+                                        <ol class="list-unstyled last-questions-list">
+                                            <li><i class="fa fa-comment"></i> <span>Hello
+                                                    david, can i pay
+                                                    with credit card?</span></li>
+                                            <li><i class="fa fa-comment"></i> <span>can i send
+                                                    it to
+                                                    another address?</span></li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row clearfix">
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <div class="card">
+                        <div class="card-body ">
+                            <div class="product-store">
+                                <div class="row" >
+                                    <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12">
+                                        <h3 class="mb-5">Similar items</h3>
+                                        <div class="recommended-items card-deck" id="more_items">
+                                            
+                                           
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="assets/js/app.min.js"></script>
+    <!-- Custom Js -->
+    <script src="assets/js/admin.js"></script>
+    <script src="assets/js/pages/ecommerce/product-detail.js"></script>
+
+</body>
+
+</html>

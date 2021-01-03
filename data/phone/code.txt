@@ -1,0 +1,78 @@
+
+for i in range(4,len(final)):
+    print(i)
+    
+    url = final[i]
+    
+    var = requests.get(url)
+    driver = webdriver.Chrome('chromedriver.exe')
+    driver.get(url)
+    SCROLL_PAUSE_TIME = 0.5
+    last_height = driver.execute_script("return document.body.scrollHeight")
+
+    while True:
+        # Scroll down to bottom
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        # Wait to load page
+        time.sleep(SCROLL_PAUSE_TIME)
+
+        # Calculate new scroll height and compare with last scroll height
+        new_height = driver.execute_script("return document.body.scrollHeight")
+        if new_height == last_height:
+            break
+        last_height = new_height
+    time.sleep(2)
+    title = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[6]/div[4]/div[1]/div/h1/span')
+    title = title.get_attribute('innerHTML')
+    title = re.sub('\n','',title)
+#     print(title)
+    d['title'].append(title)
+    price = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[6]/div[4]/div[9]/div[1]/div/table/tbody/tr[2]/td[2]/span[1]')
+    price = price.get_attribute('innerHTML')
+    price = re.sub('&nbsp;','',price)
+#     print(price)
+    d['price'].append(price)
+#     desc = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[7]/div[3]/div[1]/table/tbody')
+    try:
+        desc = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[6]/div[4]/div[38]/div/ul')
+    except:
+        desc = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[6]/div[4]/div[37]/div/ul')
+    desc = desc.get_attribute('innerHTML')
+    soup = BeautifulSoup(desc)
+    description = []
+    for i in soup.find_all('li'):
+        v = re.sub('\n','',i.text)
+        description.append(v)
+#     print(description)
+    d['desc'].append(description)
+#     details = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[19]/div/div/div/div[1]/ul')
+    details = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[30]/div/div/div/div/div/div[1]/div[1]/div/div[2]/div/div/table')
+    details = details.get_attribute('innerHTML')
+    soup = BeautifulSoup(details)
+    det=[]
+    for i in soup.find_all('tr'):
+    #     print(i.text)
+        v = re.sub('\n','',i.text)
+        det.append(v)
+#     print(det)
+    d['details'].append(det)
+    try:
+
+        review = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[38]/div/div/div[1]/div[2]/div[1]/div/div[2]/div/span/span')
+        review = review.get_attribute('innerHTML')
+    #     print(review)
+
+        d['review'].append(review)
+#         print(review)
+    except:
+        d['review'].append('Nan')
+#         print('error')
+    pic = driver.find_element_by_xpath('/html/body/div[2]/div[2]/div[4]/div[6]/div[3]/div/div[1]/div/div/div[2]/div[1]/div[1]/ul/li[1]/span/span/div/img')
+    pic = pic.get_attribute('src')
+#     print(pic)
+    d['pic'].append(pic)
+    print(i)
+    driver.close()
+
+  
